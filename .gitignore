@@ -1,0 +1,24 @@
+# Secrets
+.env
+.env.*
+
+# Persisted index / runtime data
+vector_store/
+*.pkl
+*.sqlite3
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Logs
+*.log
