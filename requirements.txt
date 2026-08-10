@@ -1,0 +1,9 @@
+# Core — required for the default offline backend (BACKEND=local, LSA embeddings)
+numpy
+pypdf
+
+# Optional — only if you switch backends in .env:
+#   BACKEND=st      -> sentence-transformers   (downloads models from HuggingFace)
+#   BACKEND=ollama  -> requests                (talks to a local Ollama server)
+# sentence-transformers
+# requests
