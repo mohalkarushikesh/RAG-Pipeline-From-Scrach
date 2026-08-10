@@ -1,0 +1,15 @@
+# Labelled evaluation set. One JSON object per line.
+#   query                  : the question
+#   relevant_sources       : document filenames that SHOULD be retrieved
+#   expected_contradiction : (optional) whether a correct answer must flag a conflict
+{"query": "What is hybrid search in RAG?", "relevant_sources": ["rag_concepts.md"]}
+{"query": "How does reranking improve retrieval quality?", "relevant_sources": ["rag_concepts.md"]}
+{"query": "What is BM25 and when does it work well?", "relevant_sources": ["rag_concepts.md"]}
+{"query": "Explain how Reciprocal Rank Fusion combines result lists", "relevant_sources": ["rag_concepts.md"]}
+{"query": "Why add overlap between chunks when splitting a document?", "relevant_sources": ["rag_concepts.md"]}
+{"query": "Which metrics measure retrieval quality?", "relevant_sources": ["rag_concepts.md"]}
+{"query": "What is dense vector retrieval by cosine similarity?", "relevant_sources": ["rag_concepts.md"]}
+{"query": "How many PTO days do full-time employees get per year?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": true}
+{"query": "Can employees work remotely, and how many days?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": true}
+{"query": "What are the standard working hours at Acme Corp?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": true}
+{"query": "What is the expense reimbursement policy and receipt threshold?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": false}
