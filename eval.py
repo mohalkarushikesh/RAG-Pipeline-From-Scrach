@@ -89,6 +89,46 @@ def evaluate_retrieval(rag: RAG, rows: list[dict], k: int) -> dict[str, dict]:
     return results
 
 
+def relevant_chunk_ids(rag: RAG, row: dict) -> set[int]:
+    """Chunk ids that are from a relevant source AND contain a gold phrase."""
+    rel_sources = set(row["relevant_sources"])
+    gold = [g.lower() for g in row.get("gold", [])]
+    ids = set()
+    for i, c in enumerate(rag.chunks):
+        if c["source"] in rel_sources and any(g in c["text"].lower() for g in gold):
+            ids.add(i)
+    return ids
+
+
+def evaluate_chunks(rag: RAG, rows: list[dict], k: int) -> tuple[dict[str, dict], int, int]:
+    """Chunk-level retrieval metrics over queries that carry gold labels.
+    Far more discriminating than doc-level on a small corpus (baseline ~k/N chunks)."""
+    labelled = [r for r in rows if r.get("gold")]
+    # precompute gold chunk ids once (independent of retrieval mode)
+    gold_ids = {id(r): relevant_chunk_ids(rag, r) for r in labelled}
+    unmatched = sum(1 for r in labelled if not gold_ids[id(r)])
+    usable = [r for r in labelled if gold_ids[id(r)]]
+
+    results: dict[str, dict] = {}
+    for mode in MODES:
+        hits1, recs, mrrs = [], [], []
+        for row in usable:
+            rel = gold_ids[id(row)]
+            ranked_ids = [c["id"] for c in rag.retrieve(row["query"], mode=mode, k=max(k, rag.cfg.top_k))]
+            top = ranked_ids[:k]
+            hits1.append(1.0 if ranked_ids and ranked_ids[0] in rel else 0.0)
+            recs.append(len(set(top) & rel) / len(rel))
+            rr = next((1.0 / r for r, cid in enumerate(ranked_ids, 1) if cid in rel), 0.0)
+            mrrs.append(rr)
+        n = max(1, len(usable))
+        results[mode] = {
+            "hit1": sum(hits1) / n,
+            "recall": sum(recs) / n,
+            "mrr": sum(mrrs) / n,
+        }
+    return results, len(usable), unmatched
+
+
 def evaluate_contradictions(rag: RAG, rows: list[dict], mode: str) -> dict:
     tp = fp = fn = tn = 0
     for row in rows:
@@ -126,6 +166,17 @@ def print_table(results: dict[str, dict], k: int) -> None:
         print(f"hybrid_rerank vs dense: Recall@k {base:.3f} -> {best:.3f}  ({lift:+.1f}%)")
 
 
+def print_chunk_table(results: dict[str, dict], k: int, usable: int, unmatched: int) -> None:
+    print(f"\nChunk-level retrieval @ k={k}  ({usable} gold-labelled queries; higher is better)")
+    if unmatched:
+        print(f"  (warning: {unmatched} gold label(s) matched no chunk and were skipped)")
+    print(f"{'mode':<16}{'Hit@1':>10}{'Recall@k':>12}{'MRR':>10}")
+    print("-" * 48)
+    for mode in MODES:
+        r = results[mode]
+        print(f"{mode:<16}{r['hit1']:>10.3f}{r['recall']:>12.3f}{r['mrr']:>10.3f}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--k", type=int, default=3, help="cut-off k for metrics")
@@ -142,6 +193,10 @@ def main() -> None:
 
     results = evaluate_retrieval(rag, rows, args.k)
     print_table(results, args.k)
+
+    chunk_results, usable, unmatched = evaluate_chunks(rag, rows, args.k)
+    if usable:
+        print_chunk_table(chunk_results, args.k, usable, unmatched)
 
     if args.contradict:
         print("\nContradiction handling (mode: hybrid_rerank)")
