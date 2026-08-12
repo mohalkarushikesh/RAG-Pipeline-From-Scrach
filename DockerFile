@@ -1,0 +1,31 @@
+# Mini RAG Chatbot — one-command reproducible run (web UI, offline local backend).
+#
+#   docker build -t mini-rag .
+#   docker run --rm -p 5000:5000 mini-rag      # then open http://localhost:5000
+#
+# To persist / reuse the built index across runs, mount a volume:
+#   docker run --rm -p 5000:5000 -v mini_rag_index:/app/vector_store mini-rag
+
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Install deps first for better layer caching. requirements.txt pulls
+# numpy + pypdf + flask (the sentence-transformers / requests lines are optional
+# and commented out for the default offline backend).
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# App code + knowledge base + eval set
+COPY rag.py app.py eval.py web.py .env* ./
+COPY documents ./documents
+COPY evalset.jsonl ./
+
+# Serve on all interfaces inside the container
+ENV HOST=0.0.0.0 \
+    PORT=5000 \
+    BACKEND=local
+
+EXPOSE 5000
+
+CMD ["python", "web.py"]
