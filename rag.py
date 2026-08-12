@@ -486,11 +486,13 @@ class FeatureReranker:
             [len(qterms & set(tokenize(c["text"]))) / max(1, len(qterms)) for c in chunks],
             dtype=np.float32,
         )
-        # Retain the first-stage fusion signal as a prior (candidates arrive in
-        # fusion order) so reranking refines rather than discards it.
+        # Retain the first-stage fusion signal as a strong prior (candidates
+        # arrive in fusion order). On a weak-embedder corpus the fused order is
+        # already good, so the reranker should *refine* it, not override it —
+        # measured: a lighter prior demoted correct chunks and hurt recall.
         n = len(chunks)
         prior = np.array([1.0 - i / n for i in range(n)], dtype=np.float32)
-        score = 0.4 * sem + 0.3 * cov + 0.3 * prior
+        score = 0.25 * sem + 0.15 * cov + 0.60 * prior
         order = np.argsort(-score)
         return [chunks[i] for i in order]
 
@@ -932,7 +934,8 @@ class RAG:
         scan = self.retrieve(query, mode="hybrid", k=max(8, (k or self.cfg.top_k) * 2))
         result = self.answerer.answer(query, chunks, scan_chunks=scan)
         result["sources"] = [
-            {"n": i + 1, "source": c["source"], "section": c["section"]} for i, c in enumerate(chunks)
+            {"n": i + 1, "source": c["source"], "section": c["section"], "text": c["text"]}
+            for i, c in enumerate(chunks)
         ]
         result["mode"] = mode
         return result
