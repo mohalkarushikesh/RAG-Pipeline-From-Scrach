@@ -1,0 +1,19 @@
+# Build the index inside the container, don't copy a host-built one
+vector_store/
+*.pkl
+
+# Python caches / envs
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Tooling / docs not needed at runtime
+.git/
+.gitignore
+*.md
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.log
