@@ -7,6 +7,8 @@ guessed — including catching regressions.
 
 > New here? **[CONCEPT.md](CONCEPT.md)** explains the whole project end to end —
 > in plain English first, then a full technical breakdown.
+> **[CHALLENGES.md](CHALLENGES.md)** is the engineering log: every bug we hit, how
+> we diagnosed data vs. code, and how the eval harness vetoed the wrong fixes.
 
 Features:
 
@@ -70,6 +72,27 @@ Try:
   (15 vs 20 days); the bot answers **and flags the contradiction**, citing both.
 - `Can employees work remotely?` — another intentional cross-edition conflict.
 
+## Web UI
+
+```bash
+pip install flask
+python web.py            # then open http://127.0.0.1:5000
+```
+
+A single-page chat interface (`web.py`) with a retrieval-mode selector. It shows
+the cited answer, flags contradictions, and lists sources — the same engine as
+the CLI, over a small JSON API (`/api/ask`, `/api/status`). It also supports
+**click-to-expand source text**, **chat history persisted across reloads**, and
+**follow-up questions** that carry the previous question's context (e.g. ask
+"How many PTO days?" then "and for 2024?").
+
+### Docker (one command)
+
+```bash
+docker build -t mini-rag .
+docker run --rm -p 5000:5000 mini-rag      # open http://localhost:5000
+```
+
 ## Measured results (default `local` backend, this corpus)
 
 ```
@@ -85,6 +108,29 @@ hybrid_rerank        0.769       0.962     0.865     0.890
 
 Contradiction handling:  precision=1.000  recall=1.000  (tp=9 fp=0 fn=0 tn=9)
 ```
+
+**Chunk-level** metrics (a chunk is relevant if it's from a labelled source *and*
+contains the gold answer phrase) are far more discriminating on a small corpus —
+and they separate the modes the doc-level view can't:
+
+```
+Chunk-level retrieval @ k=3  (26 gold-labelled queries)
+mode                 Hit@1    Recall@k       MRR
+------------------------------------------------
+bm25                 0.692       0.785     0.763
+dense                0.692       0.795     0.756   ← small genuine dense edge
+hybrid               0.692       0.792     0.763
+hybrid_rerank        0.692       0.792     0.763
+```
+
+The chunk-level view (unlike doc-level) separates the modes, and it drove a real
+fix: an earlier reranker weighting *reduced* chunk recall to 0.724 by overriding
+the fusion order and demoting correct chunks. Inspecting the reranked lists showed
+the fused order was already better on this weak-embedder corpus, so the reranker
+now keeps a strong fusion prior (refine, don't override) — recall recovered to
+0.792 with no loss of Hit@1. A test (`test_reranking_does_not_regress_chunk_recall`)
+guards it. This is the harness earning its keep: it caught the regression, and it
+proves the fix.
 
 **Reading this honestly — why all four retrievers tie:** it is not that hybrid is
 useless; it is a measurable property of *this* setup. The default `local`
@@ -135,6 +181,18 @@ question
 | `LSA_DIM` | latent dimensions for the offline embedder |
 
 Change a knob, rerun `python eval.py`, and confirm the metrics moved the right way.
+
+## Tests
+
+```bash
+pip install pytest
+pytest -q          # 27 offline tests, ~5s, no downloads
+```
+
+`test_rag.py` covers the pure logic (chunking, BM25, RRF, number extraction,
+contradiction heuristic, out-of-domain gate, eval metrics, follow-up expansion)
+and end-to-end behaviour on the local backend (definition-first answers,
+contradiction flagging, out-of-domain refusal, cited sources).
 
 ## Adding your own documents
 
