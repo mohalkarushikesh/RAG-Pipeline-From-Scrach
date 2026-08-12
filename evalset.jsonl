@@ -1,30 +1,33 @@
 # Labelled evaluation set. One JSON object per line.
 #   query                  : the question
-#   relevant_sources       : document filenames that SHOULD be retrieved
+#   relevant_sources       : document filenames that SHOULD be retrieved (doc-level metrics)
+#   gold                   : distinctive phrases identifying the answer-bearing chunk(s)
+#                            (chunk-level metrics; a chunk is relevant if it is from a
+#                            relevant source AND contains any gold phrase)
 #   expected_contradiction : (optional) whether a correct answer must flag a conflict
-{"query": "What is hybrid search in RAG?", "relevant_sources": ["rag_concepts.md"], "expected_contradiction": false}
-{"query": "How does reranking improve retrieval quality?", "relevant_sources": ["rag_concepts.md"], "expected_contradiction": false}
-{"query": "What is BM25 and when is it effective?", "relevant_sources": ["rag_concepts.md"]}
-{"query": "Explain how Reciprocal Rank Fusion combines ranked lists", "relevant_sources": ["rag_concepts.md"]}
-{"query": "Why add overlap between chunks when splitting a document?", "relevant_sources": ["rag_concepts.md"]}
-{"query": "Which metrics are used to measure retrieval quality?", "relevant_sources": ["rag_concepts.md"]}
-{"query": "What is a text embedding and why must queries and documents share a model?", "relevant_sources": ["rag_concepts.md"]}
-{"query": "What is HyDE, hypothetical document embeddings?", "relevant_sources": ["rag_patterns.md"], "expected_contradiction": false}
-{"query": "What is query expansion in retrieval?", "relevant_sources": ["rag_patterns.md"]}
-{"query": "What is maximal marginal relevance reranking?", "relevant_sources": ["rag_patterns.md"]}
-{"query": "What is a cross-encoder reranker?", "relevant_sources": ["rag_patterns.md"]}
-{"query": "How should document embeddings be cached to control cost?", "relevant_sources": ["rag_patterns.md"], "expected_contradiction": false}
-{"query": "How many PTO days do full-time employees get per year?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": true}
-{"query": "Can employees work remotely, and how many days?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": true}
-{"query": "What are the standard working hours at Acme Corp?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": true}
-{"query": "How long is the probationary period for new employees?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": true}
-{"query": "What is the annual bonus policy at Acme Corp?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": true}
-{"query": "How much are home office peripherals reimbursed?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": true}
-{"query": "What is the expense reimbursement timeline and receipt threshold?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": false}
-{"query": "What behavior does the code of conduct prohibit?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": false}
-{"query": "combining keyword matching with meaning based lookup", "relevant_sources": ["rag_concepts.md"], "expected_contradiction": false}
-{"query": "asking the model to draft an answer before looking things up", "relevant_sources": ["rag_patterns.md"], "expected_contradiction": false}
-{"query": "picking varied passages instead of near identical ones", "relevant_sources": ["rag_patterns.md"], "expected_contradiction": false}
-{"query": "working from home arrangements at the company", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": true}
-{"query": "trial period length for newly hired staff", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": true}
-{"query": "holiday allowance granted to staff each year", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "expected_contradiction": true}
+{"query": "What is hybrid search in RAG?", "relevant_sources": ["rag_concepts.md"], "gold": ["hybrid search combines"], "expected_contradiction": false}
+{"query": "How does reranking improve retrieval quality?", "relevant_sources": ["rag_concepts.md"], "gold": ["reranking is a second"], "expected_contradiction": false}
+{"query": "What is BM25 and when is it effective?", "relevant_sources": ["rag_concepts.md"], "gold": ["bm25 is a sparse lexical"]}
+{"query": "Explain how Reciprocal Rank Fusion combines ranked lists", "relevant_sources": ["rag_concepts.md"], "gold": ["reciprocal rank fusion (rrf) combines"]}
+{"query": "Why add overlap between chunks when splitting a document?", "relevant_sources": ["rag_concepts.md"], "gold": ["small overlap is added between"]}
+{"query": "Which metrics are used to measure retrieval quality?", "relevant_sources": ["rag_concepts.md"], "gold": ["recall@k measures how many"]}
+{"query": "What is a text embedding and why must queries and documents share a model?", "relevant_sources": ["rag_concepts.md"], "gold": ["an embedding is a fixed-length vector"]}
+{"query": "What is HyDE, hypothetical document embeddings?", "relevant_sources": ["rag_patterns.md"], "gold": ["hyde improves dense retrieval"], "expected_contradiction": false}
+{"query": "What is query expansion in retrieval?", "relevant_sources": ["rag_patterns.md"], "gold": ["query expansion rewrites"]}
+{"query": "What is maximal marginal relevance reranking?", "relevant_sources": ["rag_patterns.md"], "gold": ["maximal marginal relevance"]}
+{"query": "What is a cross-encoder reranker?", "relevant_sources": ["rag_patterns.md"], "gold": ["cross-encoder reranker feeds"]}
+{"query": "How should document embeddings be cached to control cost?", "relevant_sources": ["rag_patterns.md"], "gold": ["embeddings for unchanged documents should be cached"], "expected_contradiction": false}
+{"query": "How many PTO days do full-time employees get per year?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "gold": ["15 days of paid time off", "20 days of paid time off"], "expected_contradiction": true}
+{"query": "Can employees work remotely, and how many days?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "gold": ["work remotely up to three", "required to work from the office"], "expected_contradiction": true}
+{"query": "What are the standard working hours at Acme Corp?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "gold": ["10:00 to 16:00", "09:00 to 17:00"], "expected_contradiction": true}
+{"query": "How long is the probationary period for new employees?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "gold": ["90-day probationary", "period for new employees is 180 days"], "expected_contradiction": true}
+{"query": "What is the annual bonus policy at Acme Corp?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "gold": ["up to 10 percent of base salary", "bonus program has been discontinued"], "expected_contradiction": true}
+{"query": "How much are home office peripherals reimbursed?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "gold": ["up to 150 dollars", "up to 200 dollars"], "expected_contradiction": true}
+{"query": "What is the expense reimbursement timeline and receipt threshold?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "gold": ["reimbursed within 30 days"], "expected_contradiction": false}
+{"query": "What behavior does the code of conduct prohibit?", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "gold": ["harassment, discrimination, and retaliation"], "expected_contradiction": false}
+{"query": "combining keyword matching with meaning based lookup", "relevant_sources": ["rag_concepts.md"], "gold": ["hybrid search combines"], "expected_contradiction": false}
+{"query": "asking the model to draft an answer before looking things up", "relevant_sources": ["rag_patterns.md"], "gold": ["hyde improves dense retrieval"], "expected_contradiction": false}
+{"query": "picking varied passages instead of near identical ones", "relevant_sources": ["rag_patterns.md"], "gold": ["maximal marginal relevance"], "expected_contradiction": false}
+{"query": "working from home arrangements at the company", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "gold": ["work remotely up to three", "required to work from the office"], "expected_contradiction": true}
+{"query": "trial period length for newly hired staff", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "gold": ["90-day probationary", "period for new employees is 180 days"], "expected_contradiction": true}
+{"query": "holiday allowance granted to staff each year", "relevant_sources": ["handbook_2023.md", "handbook_2024.md"], "gold": ["15 days of paid time off", "20 days of paid time off"], "expected_contradiction": true}
